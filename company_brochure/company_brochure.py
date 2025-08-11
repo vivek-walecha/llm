@@ -43,11 +43,15 @@ class Website:
     def __init__(self, url):
         self.url = url
         response = requests.get(url, headers=headers)
+        #self.body = response.content
+        #driver = webdriver.Chrome()
+        #driver.get(url)
+
+        response = requests.get(url, headers=headers)
         self.body = response.content
-        driver = webdriver.Chrome()
-        driver.get(url)
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-        driver.quit()
+        soup = BeautifulSoup(self.body, 'html.parser')
+        #soup = BeautifulSoup(driver.page_source, "html.parser")
+        #driver.quit()
         self.title = soup.title.string if soup.title else "No title found"
         if soup.body:
             for irrelevant in soup.body(["script", "style", "img", "input"]):
@@ -121,17 +125,13 @@ def get_brochure_user_prompt(company_name, url):
 def create_brochure(company_name, url):
     response = openai.chat.completions.create(
         model=MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": get_brochure_user_prompt(company_name, url)},
-            {"role": "user", "content": "brochure should be in beautiful html to render, it should have few engaging images of travel nice eye pleasing backgrounds"}
-          ],
+        messages=[{"role": "system", "content": system_prompt},{"role": "user", "content": get_brochure_user_prompt(company_name, url)},{"role": "user", "content": "brochure should be in beautiful html to render, html should hav nice look and feel."}],
     )
     result = response.choices[0].message.content
     print(result)
-    p = Path("BuupassBrochure.html")
+    p = Path("AnthropicBrochure.html")
     p.write_text(result, encoding="utf-8")
 
     webbrowser.open(p.resolve().as_uri())
 
-create_brochure("Buupass", "https://buupass.com")
+create_brochure("Anthropic", "https://www.anthropic.com")
